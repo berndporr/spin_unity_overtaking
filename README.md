@@ -15,12 +15,10 @@ Promela models used can be found in the home directory of the repository. There 
 * *Generated files* that are used by the Simulator - these are template files where placeholders have been replaced with actual values from the simulator. These are the files that the Simulator verifies using Spin to get a list of Actions to do. These files are `generated_oncoming_3.pml` and `generated_preparations.pml`.
 
 ## Launching the Simulator
-To launch the project in Unity navigate to "AI car Simulator/Assets/Scenes" and open AutoTraffic Unity scene using Unity.
-When the project opens, you should see a Scene with only the Autonomous Vehicle in it.
 
-To start the simmulation press the > icon at the middle top of the screen. Left and Right lane vehicle then should spawn and the Autonomous Vehicle should start moving. Pressing > again will Stop the simulation.
-What the autonomous vehicle is doing can be seen in the console window where major events are logged.
-
-Simulator can be paused/unpaused using the || Button.
+ - In Unity navigate to "AI car Simulator" and open `AutoTraffic` Unity scene. When the project opens, you should see a Scene with only the Autonomous Vehicle in it.
+ - To start the simmulation press the > icon at the middle top of the screen. Left and Right lane vehicle then should spawn and the Autonomous Vehicle should start moving. 
+   Pressing > again will Stop the simulation. Simulator can be paused/unpaused using the || Button.
+   What the autonomous vehicle is doing can be seen in the console window where major events are logged.
 
 After running the simulator, all Promela models that have been used will be stored in the ~/logs folder for analysing what went wrong.
