@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Tested and developed under Windows 10. It should also run on other platforms as long as `spin` is in the path but hasn't been tested.
+Tested and developed under Windows 10. It should also run on other platforms as long as `spin` is in the path but this hasn't been tested.
 
  - Install Unity 2019.4.13: https://unity3d.com/get-unity/download/archive
  - Install Spin model checker (http://spinroot.com/spin/Man/README.html) and add it to the PATH variable, so that it could be reached using command "spin" from the command prompt/terminal. This is how Simulator invokes the model checking part.
