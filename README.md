@@ -8,10 +8,11 @@ Tested and developed under Windows 10. It should also run on other platforms as 
  - Install Spin model checker (http://spinroot.com/spin/Man/README.html) and add it to the PATH variable, so that it could be reached using command "spin" from the command prompt/terminal. This is how Simulator invokes the model checking part.
 
 ## Promela Models
+
 Promela models used can be found in the home directory of the repository. There are 4 types of files:
- - The Model for overtaking: `oncoming_3.pml`
- - *Template files* which are used by the Simulator - they contain placeholders which are replaced with sensor values every time the model checking is done. These files are `oncoming_3_template.pml` and `preparations_template.pml`.
- - *Generated files* that are used by the Simulator - these are template files where placeholders have been replaced with actual values from the simulator. These are the files that the Simulator verifies using Spin to get a list of Actions to do. These files are `generated_oncoming_3.pml` and `generated_preparations.pml`.
+ - The Model for overtaking: `final_model.pml`
+ - *Template files* which are used by the Simulator - they contain placeholders which are replaced with sensor values every time the model checking is done. These files are `final_model_template.pml` and `preparations_template.pml`.
+ - *Generated file* which is used by the Simulator - this is the template file where placeholders have been replaced with actual values from the simulator:  This is the file that the Simulator verifies using Spin to get a list of Actions to do: `generated_final_model.pml`.
  - Utility functions: `nc_overtake.pml`
 
 ## Launching the Simulator
