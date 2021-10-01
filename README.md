@@ -23,3 +23,8 @@ Promela models used can be found in the home directory of the repository. There 
    What the autonomous vehicle is doing can be seen in the console window where major events are logged.
 
 After running the simulator, all Promela models that have been used will be stored in the ~/logs folder for analysing what went wrong.
+
+
+## Citation
+
+[![DOI](https://zenodo.org/badge/409613701.svg)](https://zenodo.org/badge/latestdoi/409613701)
