@@ -9,10 +9,10 @@ Tested and developed under Windows 10. It should also run on other platforms as 
 
 ## Promela Models
 Promela models used can be found in the home directory of the repository. There are 4 types of files:
-* The different models for overtaking: `oncoming_3.pml` (the Final Model), `oncoming_1.pml`, `no_oncoming_1.pml`, `no_oncoming_3.pml`
-* The "Never Claim" which is used by all models (`nc_overtake.pml`)
-* *Template files* which are used by the Simulator - they contain placeholders which are replaced with sensor values every time the model checking is done. These files are `oncoming_3_template.pml` and `preparations_template.pml`.
-* *Generated files* that are used by the Simulator - these are template files where placeholders have been replaced with actual values from the simulator. These are the files that the Simulator verifies using Spin to get a list of Actions to do. These files are `generated_oncoming_3.pml` and `generated_preparations.pml`.
+ - The Model for overtaking: `oncoming_3.pml`
+ - *Template files* which are used by the Simulator - they contain placeholders which are replaced with sensor values every time the model checking is done. These files are `oncoming_3_template.pml` and `preparations_template.pml`.
+ - *Generated files* that are used by the Simulator - these are template files where placeholders have been replaced with actual values from the simulator. These are the files that the Simulator verifies using Spin to get a list of Actions to do. These files are `generated_oncoming_3.pml` and `generated_preparations.pml`.
+ - Utility functions: `nc_overtake.pml`
 
 ## Launching the Simulator
 
