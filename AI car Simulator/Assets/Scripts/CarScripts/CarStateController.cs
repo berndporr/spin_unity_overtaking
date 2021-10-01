@@ -34,7 +34,7 @@ public class CarStateController : MonoBehaviour
         UnityEditor.SceneView.FocusWindowIfItsOpen(typeof(UnityEditor.SceneView)); // DEBUG step for focusing on scene view on Play
         doNextState = true;
 
-        pmlFile = "oncoming_3";
+        pmlFile = "final_model";
         pmlFilePreparations = "preparations";
 
         pmlScriptsFolder = Path.Combine(Application.dataPath, "../../"); // model checker files
