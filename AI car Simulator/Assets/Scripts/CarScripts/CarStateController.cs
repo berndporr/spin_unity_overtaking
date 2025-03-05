@@ -1,8 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 using System.IO;
+using System.Linq;
+using System; 
 
 public class CarStateController : MonoBehaviour
 {
@@ -34,8 +36,8 @@ public class CarStateController : MonoBehaviour
         UnityEditor.SceneView.FocusWindowIfItsOpen(typeof(UnityEditor.SceneView)); // DEBUG step for focusing on scene view on Play
         doNextState = true;
 
-        pmlFile = "oncoming_3";
-        pmlFilePreparations = "preparations";
+        pmlFile = "final_model";
+        pmlFilePreparations = "parachute";
 
         pmlScriptsFolder = Path.Combine(Application.dataPath, "../../"); // model checker files
 
@@ -130,34 +132,50 @@ public class CarStateController : MonoBehaviour
     }
 
     void RunModelChecker() {
-        print("Model Checker Start");
-        File.Delete($"{pmlScriptsFolder}/generated_{pmlFile}.pml.trail");
-        UpdateModelFile(env, pmlFile);
-        System.Diagnostics.ProcessStartInfo runModelCheckerProcessInfo = new System.Diagnostics.ProcessStartInfo("spin")
-        {
-            UseShellExecute = false,
-            WorkingDirectory = pmlScriptsFolder,
-            CreateNoWindow = true,
-            Arguments = $"-B -o1 -o2 -o3 -o4 -o5 -search generated_{pmlFile}.pml"
-        };
-        System.Diagnostics.Process.Start(runModelCheckerProcessInfo).WaitForExit();
+        // check if result is memoised already
+        if(File.Exists($"{pmlScriptsFolder}/memory/{pmlFile}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().Where(x => x>=10).ToArray())}.txt")) {
+            string actionsText = File.ReadAllText($"{pmlScriptsFolder}/memory/{pmlFile}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().Where(x => x>=10).ToArray())}.txt");
+            actions = new Queue<CarState>(actionsText.Split(',').ToList().Select(x => Int32.Parse(x)).Select(x => (CarState) x));
+            print("Model obtained from memoisation!");
+            UpdateModelFile(env, pmlFile);
+        // check if preparations result is memoised already
+        } else if (File.Exists($"{pmlScriptsFolder}/memory/{pmlFilePreparations}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().ToArray())}.txt")) {
+            string actionsText = File.ReadAllText($"{pmlScriptsFolder}/memory/{pmlFilePreparations}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().ToArray())}.txt");
+            actions = new Queue<CarState>(actionsText.Split(',').ToList().Select(x => Int32.Parse(x)).Select(x => (CarState) x));
+            print("Model obtained from preparations memoisation!");
+            UpdateModelFile(env, pmlFilePreparations);
+        } else {
+            print("Model Checker Start");
+            // print($"{pmlScriptsFolder}/memory/{pmlFilePreparations}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().Where(x => x>=10).ToArray())}.txt");
+            File.Delete($"{pmlScriptsFolder}/generated_{pmlFile}.pml.trail");
+            UpdateModelFile(env, pmlFile);
+            System.Diagnostics.ProcessStartInfo runModelCheckerProcessInfo = new System.Diagnostics.ProcessStartInfo("spin")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = pmlScriptsFolder,
+                CreateNoWindow = true,
+                Arguments = $"-B -o1 -o2 -o3 -o4 -o5 -search generated_{pmlFile}.pml"
+            };
+            System.Diagnostics.Process.Start(runModelCheckerProcessInfo).WaitForExit();
 
-        System.Diagnostics.ProcessStartInfo runAnalysingProcessInfo = new System.Diagnostics.ProcessStartInfo("spin")
-        {
-            UseShellExecute = false,
-            WorkingDirectory = pmlScriptsFolder,
-            CreateNoWindow = true,
-            Arguments = $"-t generated_{pmlFile}.pml",
-            RedirectStandardOutput = true
-    };
-        System.Diagnostics.Process runModelCheckerProcess = System.Diagnostics.Process.Start(runAnalysingProcessInfo);
-        
-        runModelCheckerProcess.WaitForExit();
+            System.Diagnostics.ProcessStartInfo runAnalysingProcessInfo = new System.Diagnostics.ProcessStartInfo("spin")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = pmlScriptsFolder,
+                CreateNoWindow = true,
+                Arguments = $"-t generated_{pmlFile}.pml",
+                RedirectStandardOutput = true
+            };
+            System.Diagnostics.Process runModelCheckerProcess = System.Diagnostics.Process.Start(runAnalysingProcessInfo);
+            
+            runModelCheckerProcess.WaitForExit();
 
 
-        StreamReader solutionReader = runModelCheckerProcess.StandardOutput;
-        
-        actions = GenerateActions(solutionReader);
+            StreamReader solutionReader = runModelCheckerProcess.StandardOutput;
+            
+            actions = GenerateActions(solutionReader);
+            solutionReader.Dispose();
+        }
 
         if (actions.Count == 0)
         {
@@ -165,8 +183,20 @@ public class CarStateController : MonoBehaviour
             if (actions.Count == 0) {
                 print("Failed to find a path");
                 PauseGame();
+            } else {
+            // Memoisation: save resulting actions to a file
+            // PLACEHOLDER_OTHER_POSITION+PLACEHOLDER_ONCOMING_POSITION+PLACEHOLDER_NEXT_ONCOMING_POSITION+PLACEHOLDER_LANE+PLACEHOLDER_OBSTACLES+PLACEHOLDER_NUM_OBSTACLES
+            string actionsText = string.Join( ",", actions.Select(x => (int) x).ToArray());
+            File.WriteAllText($"{pmlScriptsFolder}/memory/{pmlFilePreparations}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().ToArray())}.txt", actionsText);
             }
+        } else {
+            // Memoisation: save resulting actions to a file
+            // PLACEHOLDER_OTHER_POSITION+PLACEHOLDER_ONCOMING_POSITION+PLACEHOLDER_NEXT_ONCOMING_POSITION+PLACEHOLDER_LANE+PLACEHOLDER_OBSTACLES+PLACEHOLDER_NUM_OBSTACLES
+            string actionsText = string.Join( ",", actions.Select(x => (int) x).ToArray());
+            File.WriteAllText($"{pmlScriptsFolder}/memory/{pmlFile}/generated_{env.GetOtherPosition().ToString()}_{env.GetOncomingPosition().ToString()}_{env.GetNextOncomingPosition().ToString()}_{env.getLane()}_{string.Join(",", env.GetObstaclesPositions().Where(x => x>=10).ToArray())}.txt", actionsText);
         }
+
+
 
         actionsReady = true;
         solutionReader.Dispose();
@@ -235,24 +265,46 @@ public class CarStateController : MonoBehaviour
     }
 
     void UpdateModelFile(Environment env, string filename) {
-        // Read template
+        if (filename != pmlFilePreparations) {
+            // Read template
 
-        string template = File.ReadAllText($"{pmlScriptsFolder}/{filename}_template.pml");
+            string template = File.ReadAllText($"{pmlScriptsFolder}/{filename}_template.pml");
 
-        // Update values
-        template = template.Replace("PLACEHOLDER_OTHER_POSITION", env.GetOtherPosition().ToString());
-        template = template.Replace("PLACEHOLDER_ONCOMING_POSITION", env.GetOncomingPosition().ToString());
-        template = template.Replace("PLACEHOLDER_NEXT_ONCOMING_POSITION", env.GetNextOncomingPosition().ToString());
-        template = template.Replace("PLACEHOLDER_LANE", laneNumToName(env.getLane()));
-        template = template.Replace("PLACEHOLDER_AI_POSITION", env.GetAiCarPosition().ToString());
-        template = template.Replace("PLACEHOLDER_REAR_POSITION", env.GetRearPosition().ToString());
-        template = template.Replace("PLACEHOLDER_OBSTACLES", string.Join(",", env.GetObstaclesPositions().ToArray()));
-        template = template.Replace("PLACEHOLDER_NUM_OBSTACLES", env.GetObstaclesPositions().Count.ToString());
+            // Update values
+            template = template.Replace("PLACEHOLDER_OTHER_POSITION", env.GetOtherPosition().ToString());
+            template = template.Replace("PLACEHOLDER_ONCOMING_POSITION", env.GetOncomingPosition().ToString());
+            template = template.Replace("PLACEHOLDER_NEXT_ONCOMING_POSITION", env.GetNextOncomingPosition().ToString());
+            template = template.Replace("PLACEHOLDER_LANE", laneNumToName(env.getLane()));
+            // template = template.Replace("PLACEHOLDER_AI_POSITION", env.GetAiCarPosition().ToString());
+            // template = template.Replace("PLACEHOLDER_REAR_POSITION", env.GetRearPosition().ToString());
+            template = template.Replace("PLACEHOLDER_OBSTACLES", string.Join(",", env.GetObstaclesPositions().Where(x => x>=10).ToArray()));
+            template = template.Replace("PLACEHOLDER_NUM_OBSTACLES", env.GetObstaclesPositions().Where(x => x>=10).Count().ToString());
 
-        //printState();
-        // Write PML file
-        File.WriteAllText($"{pmlScriptsFolder}/generated_{filename}.pml", template);
-        File.WriteAllText($"{pmlScriptsFolder}/logs/{filename}/generated_{filename}_{System.DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss")}.pml", template);
+            //printState();
+            // Write PML file
+            File.WriteAllText($"{pmlScriptsFolder}/generated_{filename}.pml", template);
+            File.WriteAllText($"{pmlScriptsFolder}/logs/{filename}/generated_{filename}_{System.DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss")}.pml", template);
+        } else {
+            // Read template
+
+            string template = File.ReadAllText($"{pmlScriptsFolder}/{filename}_template.pml");
+
+            // Update values
+            template = template.Replace("PLACEHOLDER_OTHER_POSITION", env.GetOtherPosition().ToString());
+            template = template.Replace("PLACEHOLDER_ONCOMING_POSITION", env.GetOncomingPosition().ToString());
+            template = template.Replace("PLACEHOLDER_NEXT_ONCOMING_POSITION", env.GetNextOncomingPosition().ToString());
+            template = template.Replace("PLACEHOLDER_LANE", laneNumToName(env.getLane()));
+            template = template.Replace("PLACEHOLDER_AI_POSITION", env.GetAiCarPosition().ToString());
+            template = template.Replace("PLACEHOLDER_REAR_POSITION", env.GetRearPosition().ToString());
+            template = template.Replace("PLACEHOLDER_OBSTACLES", string.Join(",", env.GetObstaclesPositions().ToArray()));
+            template = template.Replace("PLACEHOLDER_NUM_OBSTACLES", env.GetObstaclesPositions().Count().ToString());
+
+            //printState();
+            // Write PML file
+            File.WriteAllText($"{pmlScriptsFolder}/generated_{filename}.pml", template);
+            File.WriteAllText($"{pmlScriptsFolder}/logs/{filename}/generated_{filename}_{System.DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss")}.pml", template);
+        }
+
     }
 
     void printState() {
