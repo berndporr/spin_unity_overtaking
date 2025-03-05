@@ -1,5 +1,7 @@
 # Spin Unity Overtaking
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14976910.svg)](https://doi.org/10.5281/zenodo.14976910)
+
 ## Prerequisites
 
 Tested and developed under Windows 10. It should also run on other platforms as long as `spin` is in the path but this hasn't been tested.
