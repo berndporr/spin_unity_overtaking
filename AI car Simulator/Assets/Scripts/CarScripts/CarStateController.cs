@@ -37,7 +37,7 @@ public class CarStateController : MonoBehaviour
         doNextState = true;
 
         pmlFile = "final_model";
-        pmlFilePreparations = "parachute";
+        pmlFilePreparations = "parachute_model";
 
         pmlScriptsFolder = Path.Combine(Application.dataPath, "../../"); // model checker files
 
@@ -199,7 +199,6 @@ public class CarStateController : MonoBehaviour
 
 
         actionsReady = true;
-        solutionReader.Dispose();
     }
 
     Queue<CarState> RunPreparationsChecker() {
